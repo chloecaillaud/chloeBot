@@ -146,6 +146,10 @@ client.on('message', message =>
 				
 				message.delete({timeout : 10000});
 			}
+			else
+			{
+				outputText = 'sorry, you can\'t use that command in this channel';
+			}
 			
 
 			message.channel.send(outputText);
