@@ -123,7 +123,6 @@ client.on('message', message =>
 				nicknameArray = args.slice(1);
 				nicknameString = nicknameArray.join(' ');						//cut out user arg. and covert to 
 
-				console.log(mentionedUserID);
 				console.log(message.mentions.has(mentionedUser, {ignoreRoles : true, ignoreEveryone : true}));
 
 
@@ -256,7 +255,7 @@ client.on('message', message =>
 // SUBORDINATE FUNCTIONS
 //==============================================================
 // set the nickname and return proper message
-	async function setNick(user, targetUserID, nickname)
+	function setNick(user, targetUserID, nickname)
 	{
 		try
 		{
@@ -265,7 +264,7 @@ client.on('message', message =>
 
 			if (!!targetUserID)
 			{
-				await message.guild.members.cache.get(targetUserID).setNickname(nickname);	//set the nickname
+				message.guild.members.cache.get(targetUserID).setNickname(nickname);	//set the nickname
 
 				if (userID == targetUserID)
 				{
