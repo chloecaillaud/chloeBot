@@ -13,7 +13,7 @@ const helpMessage =
 			inline: true,
 		},
 		{
-			name: 'cb!nick [@username] (nickname)',
+			name: 'cb!nick (@username) (nickname)',
 			value: 'set the nickname of someone or yourself(if not specified)',
 			inline: true,
 		},

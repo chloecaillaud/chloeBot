@@ -50,7 +50,7 @@ client.on('message', message =>
 					message.channel.send(`${command} is not a supported command try **cb!help**`);
 			}
 		}
-		else if(message.channel.id === gamesCodeChannelID)
+		else if(gamesCodeChannelID.includes(message.channel.id))
 		{
 			doGameCodeChannelClean();
 		}
@@ -85,11 +85,26 @@ client.on('message', message =>
 		{
 			let user = message.author.username;
 			let userID = getuserID(user);
+			let channelID = message.channel.id;
+			let outputText;
 
-			await message.guild.members.cache.get(userID).setNickname('');
 
-			message.delete({timeout : 750});
-			message.channel.send(`${user} cleared their nickname`);
+		
+			if(!nickChannelID.includes(channelID)) return;
+			else if (userID === message.guild.ownerID)
+			{
+				outputText = 'you cannot set the nickname of the server owner';
+			}
+			else
+			{
+				await message.guild.members.cache.get(userID).setNickname('');
+
+				message.delete({timeout : 750});
+				outputText = `${user} cleared their nickname`;
+			}
+
+			message.channel.send(outputText);
+
 		}
 		catch(err)
 		{
@@ -99,7 +114,7 @@ client.on('message', message =>
 
 //--------------------------------------------------------------
 //nick command function
-	function doNickCommand()
+	async function doNickCommand()
 	{	
 		try
 		{
@@ -123,9 +138,6 @@ client.on('message', message =>
 				nicknameArray = args.slice(1);
 				nicknameString = nicknameArray.join(' ');						//cut out user arg. and covert to 
 
-				console.log(message.mentions.has(mentionedUser, {ignoreRoles : true, ignoreEveryone : true}));
-
-
 				if (mentionedUserID === undefined)
 				{
 					outputText = 'could\'t find that user, make sure you are using @ mention';
@@ -137,13 +149,15 @@ client.on('message', message =>
 				else if (mentionedUserID === message.guild.ownerID)
 				{
 					outputText = 'you cannot set the nickname of the server owner';
+					message.delete({timeout : 10000});
 				}
 				else
 				{
-					outputText = setNick(currentUser, mentionedUserID, nicknameString);
+					outputText = await setNick(currentUser, mentionedUserID, nicknameString);
+					message.delete({timeout : 10000});
 				}
 				
-				message.delete({timeout : 10000});
+				
 			}
 			else
 			{
@@ -178,8 +192,10 @@ client.on('message', message =>
 					nukeAmount = 99;
 
 				message.delete({timeout : 750});
-				removeMessages(nukeAmount);
-				outputText = 'channel cleared by admin';
+				removeMessages(nukeAmount).then
+				{
+					outputText = 'channel cleared by admin';
+				}
 			}
 			else
 			{
@@ -255,16 +271,16 @@ client.on('message', message =>
 // SUBORDINATE FUNCTIONS
 //==============================================================
 // set the nickname and return proper message
-	function setNick(user, targetUserID, nickname)
+	async function setNick(user, targetUserID, nickname)
 	{
 		try
 		{
 			let userID = getuserID(user);
-			let targetUser = client.users.cache.get(targetUserID).username;
+			let targetUser = await client.users.cache.get(targetUserID).username;
 
 			if (!!targetUserID)
 			{
-				message.guild.members.cache.get(targetUserID).setNickname(nickname);	//set the nickname
+				await message.guild.members.cache.get(targetUserID).setNickname(nickname);	//set the nickname
 
 				if (userID == targetUserID)
 				{
