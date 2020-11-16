@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const { prefix, token} = require('./config.json');
-const {gamesCodeChannelID, nickChannelID, fredboatID} = require('./absolutePaths.json');
-const {errorList, supportMessage} = require('./lists.json');
+const {gamesCodeChannelID, nickChannelID, fredboatID, supportServerID, supportChannelCategory} = require('./absolutePaths.json');
+const {errorList} = require('./lists.json');
 const imbeddedMessages = require('./imbeddedMessages.js');
 
 const client = new Discord.Client();
@@ -24,7 +24,7 @@ client.on('message', message =>
 	try
 	{
 		if (message.author.bot) return;
-		else if (message.content.startsWith(prefix))
+		else if (message.content.startsWith(prefix) && !!message.guild)
 		{
 			switch(command)
 			{
@@ -50,6 +50,31 @@ client.on('message', message =>
 					message.channel.send(`${command} is not a supported command try **cb!help**`);
 			}
 		}
+		else if(message.content.startsWith(prefix) && !message.guild)
+		{
+			switch(command)
+			{
+				case 'help':
+					doDMHelpCommand();
+					break;
+				case 'support':
+					doSupportCommand();
+					break;
+				case 'close':
+					doCloseSupportCommand();
+					break;
+				default:
+					message.channel.send(`${command} is not a supported command try **cb!help**`);
+			}
+		}
+		else if(!message.guild)
+		{
+			doForwardMessageToSupport();
+		}
+		else if(message.channel.parentID === supportChannelCategory)
+		{
+			doReplyMessageToSupport();
+		}
 		else if(gamesCodeChannelID.includes(message.channel.id))
 		{
 			doGameCodeChannelClean();
@@ -69,13 +94,27 @@ client.on('message', message =>
 		try
 		{
 			message.delete({timeout : 750});
-			await message.channel.send({ embed: imbeddedMessages.helpMessage });
+			await message.channel.send({embed: imbeddedMessages.helpMessage});
 		}
 		catch(err)
 		{
 			handleGenericError(err, 'M1');
 		}
 	}
+
+//--------------------------------------------------------------
+//help command function (DM)
+async function doDMHelpCommand()
+{
+	try
+	{
+		await message.channel.send({embed: imbeddedMessages.helpMessageDM});
+	}
+	catch(err)
+	{
+		handleGenericError(err, 'M2');
+	}
+}
 
 //--------------------------------------------------------------
 //clear nick command function
@@ -108,7 +147,7 @@ client.on('message', message =>
 		}
 		catch(err)
 		{
-			handleGenericError(err, 'M2');
+			handleGenericError(err, 'M3');
 		}
 	}
 
@@ -170,7 +209,7 @@ client.on('message', message =>
 		}
 		catch(err)
 		{
-			handleGenericError(err, 'M3');
+			handleGenericError(err, 'M4');
 		}
 		
 	}
@@ -209,12 +248,12 @@ client.on('message', message =>
 		}
 		catch(err)
 		{
-			handleGenericError(err, 'M4');
+			handleGenericError(err, 'M5');
 		}
 	}
 
 //--------------------------------------------------------------
-// remove last fredboat message command (extrernal)
+// remove last fredboat message command
 	async function doBadBotCommand()
 	{
 		try
@@ -248,22 +287,36 @@ client.on('message', message =>
 		}
 		catch(err)
 		{
-			handleGenericError(err, 'M5');
+			handleGenericError(err, 'M6');
 		}
 	}
 
 //--------------------------------------------------------------
-// start support messaging command (extrernal)
-	function doSupportCommand()
+// start support messaging command
+	async function doSupportCommand()
 	{
 		try
 		{
-			createsupportchannel();
-			startDirrectMessaging();
+				await createsupportchannel();
+				startDirrectMessaging();
 		}
 		catch(err)
 		{
-			handleGenericError(err, 'M6');
+			handleGenericError(err, 'M7');
+		}
+	}
+
+//--------------------------------------------------------------
+// close support messaging command
+	function doCloseSupportCommand()
+	{
+		try
+		{
+			console.log('close lmao');
+		}
+		catch(err)
+		{
+			handleGenericError(err, 'M7');
 		}
 	}
 
@@ -276,7 +329,7 @@ client.on('message', message =>
 		try
 		{
 			let userID = getuserID(user);
-			let targetUser = await client.users.cache.get(targetUserID).username;
+			let targetUser = client.users.cache.get(targetUserID).username;
 
 			if (!!targetUserID)
 			{
@@ -332,6 +385,7 @@ function getuserID(name)
 		{
 			let lastMessageID = message.id;
 			let fetchedMessages = await message.channel.messages.fetch({limit : 1, before : lastMessageID});
+
 			message.channel.bulkDelete(fetchedMessages, true);
 		}
 		catch(err)
@@ -357,11 +411,23 @@ function getuserID(name)
 
 //--------------------------------------------------------------
 // remove messages
-	function createsupportchannel()
+	async function createsupportchannel()
 	{
 		try
 		{
-			return
+			let server;
+			let channelName;
+
+			channelDescrip = message.author.username + '_' + message.author.discriminator;
+			channelName = message.author.id;
+
+			server = await client.guilds.fetch(supportServerID);
+
+			if(!server.channels.cache.some(chann => chann.name === channelName))
+			{
+				server.channels.create(channelName, {parent : supportChannelCategory, topic : channelDescrip});
+			}
+
 		}
 		catch(err)
 		{
@@ -371,11 +437,11 @@ function getuserID(name)
 
 //--------------------------------------------------------------
 // remove messages
-	function startDirrectMessaging()
+	async function startDirrectMessaging()
 	{
 		try
 		{
-			message.author.send(supportMessage);
+			await message.author.send({embed: imbeddedMessages.supportMessage});
 		}
 		catch(err)
 		{
@@ -383,6 +449,61 @@ function getuserID(name)
 		}
 	}
 
+//--------------------------------------------------------------
+// forward messages from dm to support
+	async function doForwardMessageToSupport()
+	{
+		try
+		{
+			let server;
+			let channelName;
+
+			channelName = message.author.id;
+
+			server = await client.guilds.fetch(supportServerID);
+
+			if(server.channels.cache.some(chann => chann.name === channelName))
+			{
+				msgCont = message.content;
+				msgChannel = server.channels.cache.find(chann => chann.name === channelName);
+
+				msgChannel.send(msgCont);
+			}
+			else
+			{
+				message.author.send('you havn\'t started a support session try using **cb!support**');
+			}
+		}
+		catch(err)
+		{
+			handleGenericError(err, 'S7');
+		}
+	}
+
+//--------------------------------------------------------------
+// reply to messages from dm to support
+	async function doReplyMessageToSupport()
+	{
+		try
+		{
+			let msgCont;
+			let userIDString;
+			let userID;
+			let msgUser;
+
+			msgCont = message.content;
+			userID = message.channel.name;
+
+	//		msgUser = client.users.cache.get(usr => usr.id === userID);
+			msgUser = client.users.cache.get(userID);
+			msgUser.send(msgCont);
+
+		}
+		catch(err)
+		{
+			handleGenericError(err, 'S8');
+		}
+	}
 //--------------------------------------------------------------
 // get ID
 	function getID(item)

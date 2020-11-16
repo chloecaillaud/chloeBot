@@ -1,12 +1,9 @@
-const helpMessage = 
+const helpMessage =
 {
 	color: 0x23272a,
 	title: 'Help',
 	description: '(these options are required)[these are optional]',
-/*	thumbnail: {
-		url: '',
-	},
-*/	fields: [
+	fields: [
 		{
 			name: 'cb!clearnick',
 			value: 'clear your nickname',
@@ -34,17 +31,39 @@ const helpMessage =
 		},
 		{
 			name: 'cb!support',
-			value: '!work in prgress! doesn\'t currently do anything',
+			value: 'open a new support session',
 			inline: true,
 		},
 	],
-/*	image: {
-		url: 'https://i.imgur.com/wSTFkRM.png',
-	},
-	footer: {
-		text: 'Some footer text here',
-		icon_url: 'https://i.imgur.com/wSTFkRM.png',
-	},*/
+};
+
+const helpMessageDM =
+{
+	color: 0x23272a,
+	title: 'Help(DM)',
+	description: '(these options are required)[these are optional]',
+	fields: [
+		{
+			name: 'cb!support',
+			value: 'open a new support session',
+			inline: true,
+		},
+		{
+			name: 'cb!close',
+			value: 'closes support messaging',
+			inline: true,
+		},
+
+	],
+};
+
+const supportMessage = 
+{
+	color: 0x23272a,
+	title: 'You started a new support session',
+	description: 'Please be aware you are talking to a real person and a response may take a while.\nIf you ran into an error, providing the error message would help greatly.\nYou can close the session at any time by typing !close',
 };
 
 module.exports.helpMessage = helpMessage;
+module.exports.helpMessageDM = helpMessageDM;
+module.exports.supportMessage = supportMessage;
