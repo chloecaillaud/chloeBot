@@ -163,7 +163,7 @@ function doUptimeCmd(client, message, args)
 
 		Object.assign(objParam, objParam = cmdObjs.uptimeObj.parameters);
 
-		failMsg = paramFill.doNukeChannCPF(client, message, args, objParam);
+		failMsg = paramFill.doUptimeCPF(client, message, args, objParam);
 
 		if (!failMsg) reply = exeCmds.exeUptimeCmd(client, message, objParam);
 		else reply = {outputText: failMsg, timeout: 5000};

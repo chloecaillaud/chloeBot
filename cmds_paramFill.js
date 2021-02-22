@@ -143,4 +143,5 @@ module.exports =
 	doNickCPF,
 	doNukeChannCPF,
 	doIniSupportCPF,
+	doUptimeCPF,
 };

@@ -43,7 +43,7 @@ async function handleMessage(client, message)
 						interactLogic.doInteractiveCmd(client, message);
 						break;
 					case 'uptime':
-						cmds.doUptimeCmd(client, message, args)
+						cmds.doUptimeCmd(client, message, args);
 						break;
 					default:
 						message.channel.send(`${command} is not a supported command try **cb!help**`);

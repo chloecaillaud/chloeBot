@@ -40,6 +40,11 @@ const helpMessage =
 			value: 'Ask me what you want to do, I\'d be happy to help!\n**You can also just use <@!744783614046371841> to talk.**\n\`',
 			inline: false,
 		},
+		{
+			name: '\`cb!uptime\`',
+			value: 'Check my uptime.\n\`',
+			inline: false,
+		},
 	],
 };
 
