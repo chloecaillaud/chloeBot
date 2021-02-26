@@ -1,6 +1,7 @@
 const convoObj = require("./interactive_convoObj");
 const logic = require("./interactive_logic");
 const flow = require("./interactive_flow");
+const cmds = require("../commands");
 
 //=====================================================================================
 // HANDLE INCOMING MESSAGES FOR INTERACTIVE CONVO
@@ -14,6 +15,7 @@ async function doInteractiveCmd(client, message)
 	let convo = {};
 	let confOutput;
 	let replyObj;
+	let finalMsg;
 
 	Object.assign(convo, convoObj.convo);
 	replyObj = await message.channel.send(flow.interactiveCmdsFlow.openingMsg());
@@ -50,7 +52,8 @@ async function doInteractiveCmd(client, message)
 			{
 				case 'pass':
 					collector.stop('run successfully');
-					convo.selCmdFlow.executeFnc(client, msg, convo.selCmdObj.parameters);
+					finalMsg = await convo.selCmdFlow.executeFnc(client, msg, convo.selCmdObj.parameters);
+					cmds.sendReply(client, msg, finalMsg);
 					return;
 				case 'fail':
 					outputText = 'Would you like to restart?';
