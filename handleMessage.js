@@ -49,7 +49,7 @@ async function handleMessage(client, message)
 						message.channel.send(`${command} is not a supported command try **cb!help**`);
 				}
 			}
-			else if (message.mentions.has(client.user))
+			else if (message.mentions.has(client.user) && !message.mentions.everyone)
 			{
 				interactLogic.doInteractiveCmd(client, message, args);
 			}
