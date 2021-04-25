@@ -1,4 +1,6 @@
+const { handleGenericError } = require("../handleGenericError");
 const flow = require("./interactive_flow");
+
 
 //=====================================================================================
 // HANDLE LOGIC FOR INTERACTIVE CONVO
@@ -25,108 +27,142 @@ function checkHelpRequest(client, message, convo)
 //-------------------------------------------------------------------------------------
 function doIntHelp(client, message, convo)
 {
-	if (convo.step === 0) {return genHelpList()}
-	if (convo.step < convo.selCmdFlow.steps.length) {return convo.selCmdFlow.steps[convo.step].helpMsg(client, message)}
-	if (convo.atConf) {return flow.confCmdFlow.helpMsg(client, message)}
+	try
+	{
+		if (convo.step === 0) {return genHelpList()}
+		else if (convo.step < convo.selCmdFlow.steps.length) {return convo.selCmdFlow.steps[convo.step].helpMsg(client, message)}
+		else if (convo.atConf) {return flow.confCmdFlow.helpMsg(client, message)}
+		else {throw 'failed to get help.'}
+	}
+	catch (err)
+	{
+		handleGenericError(client, message, err, 'IH-IL');
+		return false;
+	}
 };
 
 //-------------------------------------------------------------------------------------
 function doFirstStep(client, message, convo)
 {
-	let impliedCmds;
-	let iniFailMsg;
-	let descs;
-	let x;
-
-	impliedCmds = flow.interactiveCmdsFlow.cmds().filter(cmd => checkIfPass(client, message, convo, cmd.steps[0])); //returns array of flow objs
-
-	if (impliedCmds.length === 1)
+	try
 	{
-		Object.assign(convo.selCmdFlow, impliedCmds[0]);
-		Object.assign(convo.selCmdObj, impliedCmds[0].linkedCmdObj);
+		let impliedCmds;
+		let iniFailMsg;
+		let descs;
+		let x;
 
-		iniFailMsg = convo.selCmdFlow.paramFillFnc(client, message, convo);
+		impliedCmds = flow.interactiveCmdsFlow.cmds().filter(cmd => checkIfPass(client, message, convo, cmd.steps[0])); //returns array of flow objs
 
-		if (!iniFailMsg)
+		if (impliedCmds.length === 1)
 		{
-			return setupNextStep(client, message, convo);
+			Object.assign(convo.selCmdFlow, impliedCmds[0]);
+			Object.assign(convo.selCmdObj, impliedCmds[0].linkedCmdObj);
+
+			iniFailMsg = convo.selCmdFlow.paramFillFnc(client, message, convo);
+
+			if (!iniFailMsg) {throw false}
+			else if (iniFailMsg === 'pass')
+			{
+				return setupNextStep(client, message, convo);
+			}
+			else
+			{
+				convo.selCmdFlow = {};
+				convo.selCmdObj = {};
+				return iniFailMsg;
+			}
+
+		}
+		else if (impliedCmds.length === 0)
+		{
+			return `Hmmm, I can't quite figure out what you want, could you rephrase it?\n If you need help you can also ask.`;
 		}
 		else
 		{
-			convo.selCmdFlow = {};
-			convo.selCmdObj = {};
-			return iniFailMsg;
+			for(x in impliedCmds)
+			{
+				descs += impliedCmds[x].description + '\n';
+			}
+			
+			return `Hmmm, im not quite sure what you want, wich one did you mean:\n${descs}`;
 		}
-
 	}
-	else if (impliedCmds.length === 0)
+	catch (err)
 	{
-		return `Hmmm, I can't quite figure out what you want, could you rephrase it?\n If you need help you can also ask.`;
-	}
-	else
-	{
-		for(x in impliedCmds)
-		{
-			descs += impliedCmds[x].description + '\n';
-		}
-		
-		return `Hmmm, im not quite sure what you want, wich one did you mean:\n${descs}`;
+		handleGenericError(client, message, err, 'FS-IL');
+		return false;
 	}
 };
 
 //-------------------------------------------------------------------------------------
 function doInfoCollectSteps(client, message, convo)
 {
-	let currentStep;
-	let colFailMsg;
-
-	currentStep = convo.step;
-	colFailMsg = convo.selCmdFlow.steps[currentStep].stepColFnc(client, message, convo); // returns true/false
-
-	if (!colFailMsg)
+	try
 	{
-		return setupNextStep(client, message, convo);
+		let currentStep;
+		let colFailMsg;
+
+		currentStep = convo.step;
+		colFailMsg = convo.selCmdFlow.steps[currentStep].stepColFnc(client, message, convo); // returns true/false
+
+		if (!colFailMsg) {throw false}
+		else if (colFailMsg === 'pass')
+		{
+			return setupNextStep(client, message, convo);
+		}
+		else
+		{
+			return colFailMsg + '\n' + convo.selCmdFlow.steps[convo.step].question();
+		}
 	}
-	else
+	catch (err)
 	{
-		return colFailMsg + '\n' + convo.selCmdFlow.steps[convo.step].question();
+		handleGenericError(client, message, err, 'IC-IL');
+		return false;
 	}
 };
 
 //-------------------------------------------------------------------------------------
 function doConfirmStep(client, message, convo)
 {
-	let pass;
-	let fail;
-
-	pass = checkIfPass(client, message, convo, flow.confCmdFlow.answers[0]); //if answer is yes
-	fail = checkIfPass(client, message, convo, flow.confCmdFlow.answers[1]); //if answer is no
-
-	if (convo.step === convo.selCmdFlow.steps.length)
+	try
 	{
-		if (!pass && !fail) {return 'unsure'}
-		if (pass) {return 'pass'}
-		if (fail)
+		let pass;
+		let fail;
+
+		pass = checkIfPass(client, message, convo, flow.confCmdFlow.answers[0]); //if answer is yes
+		fail = checkIfPass(client, message, convo, flow.confCmdFlow.answers[1]); //if answer is no
+
+		if (convo.step === convo.selCmdFlow.steps.length)
 		{
-			convo.step += 1;
-			return 'fail';
+			if (!pass && !fail) {return 'unsure'}
+			if (pass) {return 'pass'}
+			if (fail)
+			{
+				convo.step += 1;
+				return 'fail';
+			}
+		}
+		else if (convo.step === convo.selCmdFlow.steps.length + 1)
+		{
+			if (!pass && !fail) {return 'unsure'}
+			if (pass)
+			{
+				Object.assign(convo.selCmdObj, convo.selCmdFlow.linkedCmdObj);
+
+				convo.step = 0;
+				convo.atConf = false;
+				
+				return 'restart';
+			}
+			if (fail) {return 'end'}
 		}
 	}
-	else if (convo.step === convo.selCmdFlow.steps.length + 1)
+	catch (err)
 	{
-		if (!pass && !fail) {return 'unsure'}
-		if (pass)
-		{
-			Object.assign(convo.selCmdObj, convo.selCmdFlow.linkedCmdObj);
-
-			convo.step = 0;
-			convo.atConf = false;
-			
-			return 'restart';
-		}
-		if (fail) {return 'end'}
+		handleGenericError(client, message, err, 'C-IL');
+		return false;
 	}
-
 };
 
 //=====================================================================================
@@ -138,6 +174,7 @@ function checkIfPass(client, message, convo, flowStep)
 
 	userMsg = message.content.toLowerCase();
 	
+
 	if (!!flowStep.userMustInc1) return (flowStep.userMustInc.some(word => userMsg.includes(word)) && flowStep.userMustInc1.some(word => userMsg.includes(word)) && !flowStep.userMustNotInc.some(word => userMsg.includes(word)));
 	else return (flowStep.userMustInc.some(word => userMsg.includes(word)) && !flowStep.userMustNotInc.some(word => userMsg.includes(word)));
 	//checks words in message against arrays in flowLogic, returns true/false
@@ -147,18 +184,26 @@ function checkIfPass(client, message, convo, flowStep)
 //-------------------------------------------------------------------------------------
 function setupNextStep(client, message, convo)
 {
-	convo.step += 1;
-
-	if (convo.step >= convo.selCmdFlow.steps.length) //reached confirmation
+	try
 	{
-		convo.atConf = true;
+		convo.step += 1;
 
-		convo.selCmdFlow.confMsgFnc(client, message, convo);
+		if (convo.step >= convo.selCmdFlow.steps.length) //reached confirmation
+		{
+			convo.atConf = true;
 
-		return `So you want to ${convo.selCmdObj.interConfMsg}.\nIs that correct?`;
+			convo.selCmdFlow.confMsgFnc(client, message, convo);
+			if(!convo.selCmdObj.interConfMsg) {throw false}
+
+			return `So you want to ${convo.selCmdObj.interConfMsg}.\nIs that correct?`;
+		}
+		else return convo.selCmdFlow.steps[convo.step].question();
 	}
-	else return convo.selCmdFlow.steps[convo.step].question();
-	
+	catch (err)
+	{
+		handleGenericError(client, message, err, 'NS-IL');
+		return false;
+	}
 };
 
 //-------------------------------------------------------------------------------------

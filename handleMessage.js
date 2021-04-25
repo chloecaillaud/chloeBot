@@ -42,11 +42,14 @@ async function handleMessage(client, message)
 					case 'talk':
 						interactLogic.doInteractiveCmd(client, message);
 						break;
+					case 'search':
+						cmds.doMsgSearchCmd(client, message, args);
+						break;
 					case 'uptime':
 						cmds.doUptimeCmd(client, message, args);
 						break;
 					default:
-						message.channel.send(`${command} is not a supported command try **cb!help**`);
+						message.channel.send(`${command} is not a supported command, try **cb!help**`);
 				}
 			}
 			else if (message.mentions.has(client.user) && !message.mentions.everyone)

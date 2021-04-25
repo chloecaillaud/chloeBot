@@ -9,7 +9,7 @@ const cmdObjs = require("../cmdObjs");
 const interactiveCmdsFlow =
 {
 	openingMsg: () => 'what did you need?',
-	cmds: () => [clearnickCmdFlow, nickCmdFlow, nukechannelCmdFlow],
+	cmds: () => [clearnickCmdFlow, nickCmdFlow, nukechannelCmdFlow, msgSearchCmdFlow],
 };
 
 const clearnickCmdFlow =
@@ -47,10 +47,10 @@ const nickCmdFlow =
 			ignoreAltCmdsCheck: false,
 		},
 		{
-			question: () => 'please tag the person you want to set the nickname for?\n(please use @ mention)',
+			question: () => 'please tag the person you want to set the nickname for?\n(please use @\u200bperson)',
 			stepColFnc: collectInputs.collectNickTarget,
 			ignoreAltCmdsCheck: false,
-			helpMsg: (client, message) => `\`Use @ to mention the person you want to add a nickname to.\`\n(ex: <@${client.user.id}>)\n Can\'t be server owner.\nOnly one person.`,
+			helpMsg: (client, message) => `\`Use @\u200bperson to mention who you want to add a nickname to.\`\n(ex: ${client.user.toString()})\n Can\'t be server owner.\nOnly one person.`,
 		},
 		{
 			question: () => 'what do you want to set their nickname to?',
@@ -85,6 +85,40 @@ const nukechannelCmdFlow =
 	],
 };
 
+const msgSearchCmdFlow =
+{
+	name: 'msgSearch',
+	description: 'Search for a message',
+	linkedCmdObj: cmdObjs.msgSearchObj,
+	paramFillFnc: paramFill.doMsgSearchIPF,
+	confMsgFnc: confMsg.doMsgSearchCM,
+	executeFnc: exeCmds.exeMsgSearchCmd,
+	steps:
+	[
+		{
+			userMustInc: ['search', 'find', 'locate', 'look for', 'seek', 'dig around for'],
+			userMustNotInc: ['nick', 'nuke', 'name', 'remove'],
+			ignoreAltCmdsCheck: false,
+		},
+		{
+			question: () => 'What search method do you want me to use?\nOptions are: \`exact|keyword|fuzzy\`',
+			stepColFnc: collectInputs.collectMsgSearchType, 
+			ignoreAltCmdsCheck: false,
+			helpMsg: (client, message) => 'Seach types:\n\`Exact:\` seach for exact string of words.\n\`Keyword:\` search by keywords.\n\`Fuzzy:\` keyword but accounts for small spelling mistakes.\n(if you aren\'t sure, try using keyword first)',
+		},
+		{
+			question: () => 'What channel(s) did you want to search?\nYou can also type *all* to search all channels.(please use #\u200bchannel)',
+			stepColFnc: collectInputs.collectMsgSearchChanns, 
+			ignoreAltCmdsCheck: false,
+			helpMsg: (client, message) => 'Use #\u200bchannel to tag the channel(s) you want to search through.\ntyping **all** will search through all channels both you and I(the bot) can view',
+		},
+		{
+			question: () => 'What words did you want to search for?',
+			stepColFnc: collectInputs.collectMsgSearchKeywords,
+			ignoreAltCmdsCheck: true,
+		},
+	],
+};
 //-------------------------------------------------------------------------------------
 
 const intHelpCmdFlow =
@@ -138,6 +172,7 @@ module.exports =
 	clearnickCmdFlow,
 	nickCmdFlow,
 	nukechannelCmdFlow,
+	msgSearchCmdFlow,
 	intHelpCmdFlow,
 	stopFlow,
 	confCmdFlow,

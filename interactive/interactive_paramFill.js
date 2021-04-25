@@ -22,12 +22,13 @@ function doClearNickIPF(client, message, convo)
 		objParam.author.isOwner = (message.author.id === message.guild.ownerID);
 		objParam.channelHasPerms = (absPath.nickChannelsID.includes(message.channel.id));
 	
-		return false;
+		return 'pass';
 
 	}
 	catch (err)
 	{
 		handleGenericError(client, message, err, 'CN-IPF');
+		return false;
 	}
 };
 
@@ -46,11 +47,12 @@ function doNickIPF(client, message, convo)
 		objParam.author.name = message.author.username;
 		objParam.channelHasPerms = (absPath.nickChannelsID.includes(message.channel.id));
 
-		return false;
+		return 'pass';
 	}
 	catch (err)
 	{
 		handleGenericError(client, message, err, 'N-IPF');
+		return false;
 	}
 };
 
@@ -67,11 +69,12 @@ function doNukeIPF(client, message, convo)
 
 		objParam.authorHasPerms = (message.member.roles.cache.some(role => absPath.nukePermRolesID.includes(role.id)));
 
-		return false;
+		return 'pass';
 	}
 	catch (err)
 	{
 		handleGenericError(client, message, err, 'NC-IPF');
+		return false;
 	}
 };
 
@@ -80,11 +83,12 @@ function doBadBotIPF(client, message, convo)
 {
 	try
 	{
-
+		return 'pass';
 	}
 	catch (err)
 	{
 		handleGenericError(client, message, err, 'BB-IPF');
+		return false;
 	}
 };
 
@@ -103,14 +107,28 @@ async function doSupportIPF(client, message, convo)
 		objParam.supportChannel.description = message.author.username + '_' + message.author.discriminator;
 		objParam.supportChannel.exists = (supServer.channels.cache.some(chan => chan.name == message.author.id));
 
-		return false;
+		return 'pass';
 	}
 	catch (err)
 	{
 		handleGenericError(client, message, err, 'S-IPF');
+		return false;
 	}
 };
 
+//--------------------------------------------------------------
+function doMsgSearchIPF(client, message, args, objParam)
+{
+	try
+	{
+		return 'pass';
+	}
+	catch (err)
+	{
+		handleGenericError(client, message, err, 'MS-IPF');
+		return false;
+	}
+};
 //==============================================================
 
 module.exports =
@@ -120,4 +138,5 @@ module.exports =
 	doNukeIPF,
 	doBadBotIPF,
 	doSupportIPF,
+	doMsgSearchIPF,
 };

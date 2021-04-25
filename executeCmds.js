@@ -1,6 +1,7 @@
 const { handleGenericError } = require("./handleGenericError");
 const imbeddedMessages = require('./imbeddedMessages.js');
 const absPath = require('./absolutePaths.json');
+const Discord = require('discord.js');
 
 //==============================================================
 // EXECUTE COMMANDS
@@ -42,8 +43,6 @@ async function exeNickCmd(client, message, objParam)
 {
 	try
 	{
-		console.log(message);
-		console.log(objParam);
 
 		if (!objParam.channelHasPerms) {return {outputText: 'I can\'t set nicknames in this channel, sorry.', timeout: 5000}}
 		if (objParam.target.isOwner) {return {outputText: 'I can\'t set the server owner\'s nickname, sorry.', timeout: 5000}}
@@ -126,6 +125,172 @@ function exeIniSupportCmd(client, message, objParam)
 };
 
 //--------------------------------------------------------------
+async function exeMsgSearchCmd(client, message, objParam)
+{
+	try
+	{
+		let currentChannelNumb;
+		let pendingMsgContent;
+		let currentChannel;
+		let maxChannelNumb;
+		let filteredCont;
+		let pendingMsg;
+		let result;
+
+		maxChannelNumb = objParam.searchChannels.size;
+		currentChannelNumb = 1;
+		
+		pendingMsgContent = genPendingMsg(client, message, objParam.maxIteration, 0, maxChannelNumb, 0);
+		pendingMsg = await message.channel.send(pendingMsgContent);
+
+		for (currentChannel of objParam.searchChannels)
+		{
+			result = await itrGetMsgs(client, message, objParam, currentChannel, maxChannelNumb, currentChannelNumb, pendingMsg);
+			if (!result) {return false}
+			if (!!result && result.pass === true) {break}
+
+			currentChannelNumb ++;
+		}
+
+		if (!result) {return {outputText: 'something went wrong', timeout: false}}
+		else if (result.pass === false)
+		{
+			await pendingMsg.delete();
+
+			return {outputText: 'Could not find any matching messages, sorry.', timeout: false}
+		}
+		else if (result.pass === true)
+		{
+			filteredCont = Discord.Util.cleanContent(result.matchingMsg.content, result.matchingMsg);
+
+			await pendingMsg.delete();
+			return {outputText: `${result.matchingMsg.url}\nquoted from: ${result.matchingMsg.author.username}\n>>> ${filteredCont}`, timeout: false}
+		}
+		return {outputText: 'done', timeout: false};
+	}
+	catch (err)
+	{
+		handleGenericError(client, message, err, 'EXE-MS');
+	}
+};
+
+//```````````````````````````````````````````````````````````````
+async function itrGetMsgs(client, message, objParam, currentChannel, maxChannelNumb, currentChannelNumb, pendingMsg)
+{
+	try
+	{
+		let pendingMsgContent;
+		let fetchedMessages;
+		let currentFetchItr;
+		let lastMessage;
+		let match;
+
+		currentFetchItr = 1;
+
+		fetchedMessages = await currentChannel[1].messages.fetch({ limit: 100 });
+
+		match = checkMsgMatch(client, message, objParam, fetchedMessages);
+		if (!match) {return false}
+		else if (match.pass === true) {return match}
+
+		pendingMsgContent = genPendingMsg(client, message, objParam.maxIteration, currentFetchItr, maxChannelNumb, currentChannelNumb);
+		pendingMsg = await pendingMsg.edit(pendingMsgContent);
+		
+		while (currentFetchItr < objParam.maxIteration)
+		{
+			if (!fetchedMessages.last()) {break}
+			lastMessage = fetchedMessages.last().id;
+
+			fetchedMessages = await currentChannel[1].messages.fetch({ limit: 100, before: lastMessage});
+
+			match = checkMsgMatch(client, message, objParam, fetchedMessages);
+			if (!match) {return false}
+			else if (match.pass === true) {return match}
+			
+			currentFetchItr ++;
+
+			pendingMsgContent = genPendingMsg(client, message, objParam.maxIteration, currentFetchItr, maxChannelNumb, currentChannelNumb);
+			pendingMsg = await pendingMsg.edit(pendingMsgContent);
+		}
+
+		return match;
+	}
+	catch (err)
+	{
+		handleGenericError(client, message, err, 'EXE-MS-G');
+		return false;
+	}
+};
+
+//```````````````````````````````````````````````````````````````
+function checkMsgMatch(client, message, objParam, fetchedMessages)
+{
+	try
+	{
+		let fetchedMsgCont;
+		let failResult;
+		let msg;
+
+		failResult = {pass: false, matchingMsg: {}};
+
+		for (msg of fetchedMessages)
+		{
+			if (!msg[1] || !msg[1].content) {return failResult}
+			if (msg[1] == message || msg[1].author == client.user) {continue}
+			fetchedMsgCont = msg[1].content.toLowerCase();
+
+			switch (objParam.searchType)
+			{
+				case 'exact':
+					if (fetchedMsgCont.includes(objParam.keywords)) {return {pass: true, matchingMsg: msg[1]}}
+					break;
+				case 'keyword':
+					if (objParam.keywords.every(word => fetchedMsgCont.includes(word))) {return {pass: true, matchingMsg: msg[1]}}
+					break;
+				case 'fuzzy':
+					if (objParam.keywords.every(word => fetchedMsgCont.includes(word))) {return {pass: true, matchingMsg: msg[1]}}
+					break;
+				default:
+					throw 'error determining search type';
+			}
+		}
+
+		return failResult;
+	}
+	catch (err)
+	{
+		handleGenericError(client, message, err, 'EXE-MS-C');
+		return false;
+	}
+};
+
+//```````````````````````````````````````````````````````````````
+function genPendingMsg(client, message, barMax, barCur, countMax, countCur)
+{
+	try
+	{
+		let countMsg;
+		let baseMsg;
+		let barMsg;
+		let barPos;
+		let bar = ['[', '░', '░', '░', '░', '░', '░', '░', '░', '░', '░', ']'];
+		
+		barPos = (barCur / barMax) * 10 + 1;
+		barMsg = bar.fill('▓', 1, barPos).join('');
+		
+		baseMsg = 'Searching...\nThis may take take a little bit.';
+		countMsg = `${countCur}/${countMax}`;
+
+		return `${baseMsg}\n${barMsg} ${countMsg}`;
+	}
+	catch (err)
+	{
+		handleGenericError(client, message, err, 'EXE-MS-P');
+		return false;
+	}
+};
+
+//--------------------------------------------------------------
 function exeUptimeCmd(client, message, objParam)
 {
 	try
@@ -138,6 +303,7 @@ function exeUptimeCmd(client, message, objParam)
 	}
 };
 
+
 module.exports =
 {
 	exeHelpCmd,
@@ -146,5 +312,6 @@ module.exports =
 	exeNukeChannCmd,
 	exeBadBotCmd,
 	exeIniSupportCmd,
+	exeMsgSearchCmd,
 	exeUptimeCmd,
 };

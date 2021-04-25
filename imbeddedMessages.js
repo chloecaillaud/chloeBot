@@ -7,42 +7,47 @@ const helpMessage =
 	[
 		{
 			name: '\`cb!clearnick\`',
-			value: 'Clear your nickname.\n\`',
+			value: 'Clear your nickname.\n\---',
 			inline: false,
 		},
 		{
 			name: '\`cb!nick @username nickname\`',
-			value: 'Set the nickname of someone or yourself(if not specified).\n\`',
+			value: 'Set the nickname of someone or yourself(if not specified).\n\---',
 			inline: false,
 		},
 		{
 			name: '\`cb!nukechannel amount\`',
-			value: 'Clears an amount of messages from channel. max: 99.\n\`',
+			value: 'Clears an amount of messages from channel. max: 99.\n\---',
 			inline: false,
 		},
 		{
 			name: '\`cb!setup\`',
-			value: '!work in prgress! Doesn\'t currently do anything.\n\`',
+			value: '!work in prgress! Doesn\'t currently do anything.\n\---',
 			inline: false,
 		},
 		{
 			name: '\`cb!badbot\`',
-			value: 'Removes last embeded message sent by a bot.\n\`',
+			value: 'Removes last embeded message sent by a bot.\n\---',
 			inline: false,
 		},
 		{
 			name: '\`cb!support\`',
-			value: 'Need extra help? ask the bot dirrectly.\n\`',
+			value: 'Need extra help? ask the bot dirrectly.\n\---',
 			inline: false,
 		},
 		{
 			name: '\`cb!talk\`',
-			value: 'Ask me what you want to do, I\'d be happy to help!\n**You can also just use <@!744783614046371841> to talk.**\n\`',
+			value: 'Ask me what you want to do, I\'d be happy to help!\n**You can also just use <@!744783614046371841> instead.**\n\---',
+			inline: false,
+		},
+		{
+			name: '\`cb!search searchType #channel(s)(optional) keywords\`',
+			value: 'search for a specific message\n\n__**seachTypes**__:\n**Exact**: seach for exact string of words.\n**Keyword**: search by keywords.\n**Fuzzy**: keyword but accounts for small spelling mistakes.\n\---',
 			inline: false,
 		},
 		{
 			name: '\`cb!uptime\`',
-			value: 'Check my uptime.\n\`',
+			value: 'Check my uptime.\n\---',
 			inline: false,
 		},
 	],

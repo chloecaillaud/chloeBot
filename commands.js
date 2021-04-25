@@ -35,14 +35,16 @@ async function doClearNickCmd(client, message, args)
 	try
 	{
 		let objParam = {};
+		let PFresult;
 		let reply;
 
 		Object.assign(objParam, objParam = cmdObjs.clearNickObj.parameters);
 
-		failMsg = paramFill.doClearNickCPF(client, message, args, objParam);
+		PFresult = paramFill.doClearNickCPF(client, message, args, objParam);
 
-		if (!failMsg) reply = await exeCmds.exeClearNickCmd(client, message, objParam);
-		else reply = {outputText: failMsg, timeout: 5000};
+		if (!PFresult) {return}
+		else if (PFresult === 'pass') reply = await exeCmds.exeClearNickCmd(client, message, objParam);
+		else reply = {outputText: PFresult, timeout: 10000};
 
 		sendReply(client, message, reply);
 	}
@@ -58,14 +60,16 @@ async function doNickCmd(client, message, args)
 	try
 	{
 		let objParam = {};
+		let PFresult;
 		let reply;
 
 		Object.assign(objParam, objParam = cmdObjs.nickObj.parameters);
 
-		failMsg = paramFill.doNickCPF(client, message, args, objParam);
+		PFresult = paramFill.doNickCPF(client, message, args, objParam);
 
-		if (!failMsg) reply = await exeCmds.exeNickCmd(client, message, objParam);
-		else reply = {outputText: failMsg, timeout: 5000};
+		if (!PFresult) {return}
+		else if (PFresult === 'pass') reply = await exeCmds.exeNickCmd(client, message, objParam);
+		else reply = {outputText: PFresult, timeout: 10000};
 
 		sendReply(client, message, reply);
 	}
@@ -82,14 +86,16 @@ async function doNukeChannCmd(client, message, args)
 	try
 	{
 		let objParam = {};
+		let PFresult;
 		let reply;
 		
 		Object.assign(objParam, objParam = cmdObjs.nukeChannelObj.parameters);
 
-		failMsg = paramFill.doNukeChannCPF(client, message, args, objParam);
+		PFresult = paramFill.doNukeChannCPF(client, message, args, objParam);
 
-		if (!failMsg) reply = await exeCmds.exeNukeChannCmd(client, message, objParam);
-		else reply = {outputText: failMsg, timeout: 5000};
+		if (!PFresult) {return}
+		else if (PFresult === 'pass') reply = await exeCmds.exeNukeChannCmd(client, message, objParam);
+		else reply = {outputText: PFresult, timeout: 10000};
 
 		sendReply(client, message, reply);
 	}
@@ -123,14 +129,16 @@ async function doIniSupportCmd(client, message, args)
 	try
 	{
 		let objParam = {};
+		let PFresult;
 		let reply;
 
 		Object.assign(objParam, objParam = cmdObjs.supportObj.parameters);
 
-		failMsg = await paramFill.doIniSupportCPF(client, message, args, objParam);
+		PFresult = await paramFill.doIniSupportCPF(client, message, args, objParam);
 
-		if (!failMsg) reply = exeCmds.exeIniSupportCmd(client, message, objParam);
-		else reply = {outputText: failMsg, timeout: 5000};
+		if (!PFresult) {return}
+		else if (PFresult === 'pass') reply = exeCmds.exeIniSupportCmd(client, message, objParam);
+		else reply = {outputText: PFresult, timeout: 10000};
 
 		sendReply(client, message, reply);
 	}
@@ -141,32 +149,45 @@ async function doIniSupportCmd(client, message, args)
 }
 
 //--------------------------------------------------------------
-function doCloseSupportCmd(client, message, args)
+async function doMsgSearchCmd(client, message, args)
 {
 	try
 	{
-		console.log('close lmao');
+		let objParam = {};
+		let PFresult;
+		let reply;
+
+		Object.assign(objParam, objParam = cmdObjs.msgSearchObj.parameters);
+
+		PFresult = paramFill.doMsgSearchCPF(client, message, args, objParam);
+
+		if (!PFresult) {return}
+		else if (PFresult === 'pass') reply = await exeCmds.exeMsgSearchCmd(client, message, objParam);
+		else reply = {outputText: PFresult, timeout: 10000};
+
+		sendReply(client, message, reply);
 	}
 	catch (err)
 	{
-		handleGenericError(client, message, err, 'C-CS');
+		handleGenericError(client, message, err, 'C-MS');
 	}
 }
-
 //--------------------------------------------------------------
 function doUptimeCmd(client, message, args)
 {
 	try
 	{
 		let objParam = {};
+		let PFresult;
 		let reply;
 
 		Object.assign(objParam, objParam = cmdObjs.uptimeObj.parameters);
 
-		failMsg = paramFill.doUptimeCPF(client, message, args, objParam);
+		PFresult = paramFill.doUptimeCPF(client, message, args, objParam);
 
-		if (!failMsg) reply = exeCmds.exeUptimeCmd(client, message, objParam);
-		else reply = {outputText: failMsg, timeout: 5000};
+		if (!PFresult) {return}
+		else if (PFresult === 'pass') reply = exeCmds.exeUptimeCmd(client, message, objParam);
+		else reply = {outputText: PFresult, timeout: 10000};
 
 		sendReply(client, message, reply);
 	}
@@ -232,12 +253,29 @@ function doReplyFromSupport(client, message)
 		handleGenericError(client, message, err, 'C-RS');
 	}
 }
+
 //--------------------------------------------------------------
+function doCloseSupportCmd(client, message, args)
+{
+	try
+	{
+		console.log('close lmao');
+	}
+	catch (err)
+	{
+		handleGenericError(client, message, err, 'C-CS');
+	}
+}
+
+//==============================================================
+//==============================================================
 async function sendReply(client, message, reply)
 {
 	try
 	{
 		let closingMsg;
+
+		if (!reply || !reply.outputText) {return}
 
 		closingMsg = await message.channel.send(reply.outputText);
 
@@ -261,10 +299,11 @@ module.exports =
 	doNukeChannCmd,
 	doBadBotCmd,
 	doIniSupportCmd,
-	doCloseSupportCmd,
+	doMsgSearchCmd,
 	doUptimeCmd,
 	doCleanGC,
 	doForwardToSupport,
 	doReplyFromSupport,
+	doCloseSupportCmd,
 	sendReply,
 };

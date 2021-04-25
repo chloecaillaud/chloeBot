@@ -8,8 +8,23 @@ function handleGenericError(client, message, reportedError, arbitrFuncID)
 {
 	const genericErrorMsg = errorList[Math.floor(Math.random() * errorList.length)];
 
-	console.log(reportedError.name + '\n' + reportedError.message);
+	if(!reportedError) {return}
 
-	message.channel.send(genericErrorMsg + `\n error ref code: **${arbitrFuncID}** - ${reportedError.name}`);
-}
+	switch (typeof(reportedError))
+	{
+		case 'string':
+			message.channel.send(genericErrorMsg + `\n error ref code: **${arbitrFuncID}** - ${reportedError}`);
+			console.log(reportedError);
+			break;
+		case 'object':
+			if (!!reportedError.name)
+			{
+				message.channel.send(genericErrorMsg + `\n error ref code: **${arbitrFuncID}** - ${reportedError.name}`);
+				console.log(reportedError.name + '\n' + reportedError.message);
+				break;
+			}
+		default:
+			message.channel.send(genericErrorMsg + `\n error ref code: **${arbitrFuncID}** - unknown error`)
+	}
+};
 exports.handleGenericError = handleGenericError;

@@ -17,6 +17,7 @@ function doClearNickCM(client, message, convo)
 	catch (err)
 	{
 		handleGenericError(client, message, err, 'CN-CM');
+		return false;
 	}
 };
 
@@ -42,6 +43,7 @@ function doNickCM(client, message, convo)
 	catch (err)
 	{
 		handleGenericError(client, message, err, 'N-CM');
+		return false;
 	}
 };
 
@@ -60,39 +62,35 @@ function doNukeCM(client, message, convo)
 	catch (err)
 	{
 		handleGenericError(client, message, err, 'NC-CM');
+		return false;
 	}
 };
 
 //--------------------------------------------------------------
-function doBadBotCM(client, message, convo)
+function doMsgSearchCM(client, message, convo)
 {
 	try
 	{
-		convo.selCmdObj.interConfMsg = `remove the last fredboat message`;
-
-	}
-	catch (err)
-	{
-		handleGenericError(client, message, err, 'BB-CM');
-	}
-};
-
-//--------------------------------------------------------------
-async function doSupportCM(client, message, convo)
-{
-	try
-	{
+		let stringedKeywords;
+		let channList;
 		let objParam;
 
 		objParam = convo.selCmdObj.parameters;
 
-		convo.selCmdObj.interConfMsg = `open a support chat for ${client.user.username}`;
+		if (Array.isArray(objParam.keywords)) {stringedKeywords = objParam.keywords.join(' ')}
+		else {stringedKeywords = objParam.keywords}
 
+		if (!!objParam.specifiesChannels) {channList = objParam.searchChannels.map(x => x.toString()).join(' ')}
+		else {channList = 'all channels'}
+
+		console.log(channList);
+		convo.selCmdObj.interConfMsg = `\n__**search for:**__ ${stringedKeywords}\n__**search type:**__ ${objParam.searchType}\n__**In:**__ ${channList}`;
 
 	}
 	catch (err)
 	{
-		handleGenericError(client, message, err, 'S-CM');
+		handleGenericError(client, message, err, 'MS-CM');
+		return false;
 	}
 };
 
@@ -103,6 +101,5 @@ module.exports =
 	doClearNickCM,
 	doNickCM,
 	doNukeCM,
-	doBadBotCM,
-	doSupportCM,
+	doMsgSearchCM,
 };

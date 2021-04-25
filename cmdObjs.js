@@ -81,6 +81,20 @@ const supportObj =
 	interConfMsg: '',
 };
 
+const msgSearchObj =
+{
+	name: 'messageSearch',
+	parameters: 
+	{
+		searchType: '',
+		specifiesChannels: false,
+		searchChannels: {},
+		keywords: '',
+		maxIteration: 10,
+	},
+	interConfMsg: '',
+};
+
 const uptimeObj =
 {
 	name: 'uptime',
@@ -101,5 +115,6 @@ module.exports =
 	nukeChannelObj,
 	badBotObj,
 	supportObj,
+	msgSearchObj,
 	uptimeObj,
 };

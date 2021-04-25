@@ -19,12 +19,13 @@ function doClearNickCPF(client, message, args, objParam)
 		objParam.author.isOwner = (message.author.id === message.guild.ownerID);
 		objParam.channelHasPerms = (absPath.nickChannelsID.includes(message.channel.id));
 	
-		return false;
+		return 'pass';
 
 	}
 	catch (err)
 	{
 		handleGenericError(client, message, err, 'CPF-CN');
+		return false;
 	}
 };
 
@@ -35,14 +36,11 @@ function doNickCPF(client, message, args, objParam)
 	{
 		let nickname;
 
-		console.log(args);
-		console.log(args.slice(1).join(' '));
-
 		nickname = args.slice(1).join(' ');
 
 		if (!absPath.nickChannelsID.includes(message.channel.id)) {return 'I\'m not allowed to set nicknames in this channel.'}
 
-		if (args.length <= 1) {return `invalid syntax, proper use ex: ${prefix}nick <@${client.user.id}> a nickname`}
+		if (args.length <= 1) {return `Invalid syntax, proper use ex: ${prefix}nick ${client.user.toString()} a nickname.`}
 
 		if (!message.mentions.users.first()) {return 'Hmm, I couldn\'t find that user, sorry.'}
 		if (message.mentions.users.length > 1) {return 'I can only set the nickname for one person at a time.'}
@@ -61,11 +59,12 @@ function doNickCPF(client, message, args, objParam)
 
 		objParam.nickname = nickname;
 
-		return false;
+		return 'pass';
 	}
 	catch (err)
 	{
 		handleGenericError(client, message, err, 'CPF-N');
+		return false;
 	}
 };
 
@@ -89,11 +88,12 @@ function doNukeChannCPF(client, message, args, objParam)
 
 		objParam.numbOfMsgs = amount;
 
-		return false;
+		return 'pass';
 	}
 	catch (err)
 	{
 		handleGenericError(client, message, err, 'CFP-NC');
+		return false;
 	}
 };
 
@@ -109,11 +109,72 @@ async function doIniSupportCPF(client, message, args, objParam)
 		objParam.supportChannel.description = message.author.username + '_' + message.author.discriminator;
 		objParam.supportChannel.exists = (supServer.channels.cache.some(chan => chan.name == message.author.id));
 
-		return false;
+		return 'pass';
 	}
 	catch (err)
 	{
 		handleGenericError(client, message, err, 'CPF-IS');
+		return false;
+	}
+};
+
+//--------------------------------------------------------------
+function doMsgSearchCPF(client, message, args, objParam)
+{
+	try
+	{
+		let authorFilteredChannList;
+		let clientFilteredChannList;
+		let rawChannelList;
+		let authorMember;
+		let clientMember;
+
+		if (!args.length || args.length < 2) {return `Invalid syntax, proper use **ex:** ${prefix}search keyword ${message.channel.toString()} blah blah.\n use **/help** for more info`}
+
+		if (!!message.mentions.channels.first()) {objParam.specifiesChannels = true}
+		
+		objParam.searchType = args[0].toLowerCase();
+
+		switch (objParam.searchType)
+		{
+			case 'exact':
+				objParam.keywords = args.filter(x => !!x && !x.startsWith('<#')).slice(1).join(' ').trim().toLowerCase(); 
+				break;
+			case 'keyword':
+				objParam.keywords = args.filter(x => !!x && !x.startsWith('<#')).slice(1).map(x => x.toLowerCase());
+				break;
+			case 'fuzzy':
+				objParam.keywords = args.filter(x => !!x && !x.startsWith('<#')).slice(1).map(x => x.toLowerCase());
+				break;
+			default:
+				return 'Sorry that\'s not a valid search type.\n valid tpyes: `exact | keyword | fuzzy`\nUse **/help** for more info.';
+		}
+
+		if (!objParam.keywords.length) {return `You didn't precise anything to search.`}
+
+		if (!objParam.specifiesChannels) {rawChannelList = message.guild.channels.cache.filter(chann => chann.type === "text")}
+		else {rawChannelList = message.mentions.channels.filter(chann => chann.type === "text")}
+
+		if (rawChannelList.size === 0) {return 'Hmmm, seems I couldn\'t find the channel(s)'}
+
+		authorMember = message.guild.member(message.author);
+		authorFilteredChannList = rawChannelList.filter(chann => chann.permissionsFor(authorMember).has(['VIEW_CHANNEL', 'READ_MESSAGE_HISTORY'], true));
+
+		if (authorFilteredChannList.size === 0) {return 'You do not have permissions to view any of those channels.'};
+
+		clientMember = message.guild.member(client.user);
+		clientFilteredChannList = authorFilteredChannList.filter(chann => chann.permissionsFor(clientMember).has(['VIEW_CHANNEL', 'READ_MESSAGE_HISTORY'], true));
+
+		if (clientFilteredChannList.size === 0) {return 'I do not have permissions to view any of those channels.'};
+
+		objParam.searchChannels = clientFilteredChannList.filter(chann => !absPath.searchBlacklist.includes(chann.id));
+
+		return 'pass';
+	}
+	catch (err)
+	{
+		handleGenericError(client, message, err, 'CPF-MS');
+		return false;
 	}
 };
 
@@ -130,12 +191,15 @@ function doUptimeCPF(client, message, args, objParam)
 		objParam.minutes = Math.floor((elapsed / (1000 * 60)) % 60);
 		objParam.hours = Math.floor((elapsed / (1000 * 60 * 60)) % 24);
 		objParam.days = Math.floor(elapsed / (1000 * 60 * 60 * 24));
+
+		return 'pass';
 	}
 	catch (err)
 	{
 		handleGenericError(client, message, err, 'CPF-UT');
+		return false;
 	}
-}
+};
 
 module.exports =
 {
@@ -143,5 +207,6 @@ module.exports =
 	doNickCPF,
 	doNukeChannCPF,
 	doIniSupportCPF,
+	doMsgSearchCPF,
 	doUptimeCPF,
 };
