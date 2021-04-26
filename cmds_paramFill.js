@@ -148,7 +148,7 @@ function doMsgSearchCPF(client, message, args, objParam)
 				objParam.keywords = args.filter(x => !!x && !x.startsWith('<#')).slice(1).map(x => x.toLowerCase());
 				break;
 			default:
-				return 'Sorry that\'s not a valid search type.\n valid tpyes: `exact | keyword | fuzzy`\nUse **/help** for more info.';
+				return 'Sorry that\'s not a valid search type.\n valid tpyes: `exact | keyword | fuzzy`\nUse **cb!help** for more info.';
 		}
 
 		if (!objParam.keywords.length) {return `You didn't precise anything to search.`}

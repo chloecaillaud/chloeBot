@@ -107,7 +107,7 @@ const msgSearchCmdFlow =
 			helpMsg: (client, message) => 'Seach types:\n\`Exact:\` seach for exact string of words.\n\`Keyword:\` search by keywords.\n\`Fuzzy:\` keyword but accounts for small spelling mistakes.\n(if you aren\'t sure, try using keyword first)',
 		},
 		{
-			question: () => 'What channel(s) did you want to search?\nYou can also type *all* to search all channels.(please use #\u200bchannel)',
+			question: () => 'What channel(s) did you want to search?\nYou can also type *all* to search all channels.\n(please use #\u200bchannel)',
 			stepColFnc: collectInputs.collectMsgSearchChanns, 
 			ignoreAltCmdsCheck: false,
 			helpMsg: (client, message) => 'Use #\u200bchannel to tag the channel(s) you want to search through.\ntyping **all** will search through all channels both you and I(the bot) can view',
