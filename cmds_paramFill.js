@@ -132,6 +132,7 @@ function doMsgSearchCPF(client, message, args, objParam)
 		if (!args.length || args.length < 2) {return `Invalid syntax, proper use **ex:** ${prefix}search keyword ${message.channel.toString()} blah blah.\n use **/help** for more info`}
 
 		if (!!message.mentions.channels.first()) {objParam.specifiesChannels = true}
+		else {objParam.specifiesChannels = false}
 		
 		objParam.searchType = args[0].toLowerCase();
 
