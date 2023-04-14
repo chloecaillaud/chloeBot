@@ -1,16 +1,33 @@
-const { handleMessage } = require("./handleMessage");
-const {token} = require('./config.json');
+const { handleInteraction } = require("./handleInteraction");
+const {TOKEN} = require('./config.json');
+const { Events, GatewayIntentBits } = require('discord.js');
 const Discord = require('discord.js');
-const client = new Discord.Client();
+
+//--------------------------------------------------------------
+
+//set of message ids to ignore interaction from
+const interactionFilter = new Set();
+
+const client = new Discord.Client({ intents:
+	[
+		GatewayIntentBits.Guilds
+		,GatewayIntentBits.GuildMessages
+		,GatewayIntentBits.MessageContent
+		,GatewayIntentBits.GuildIntegrations
+		,GatewayIntentBits.DirectMessages
+	]});
+
 //--------------------------------------------------------------
 // check that the bot works
-client.once('ready', () => 
+
+client.once(Events.ClientReady, () => 
 {
 	console.log('Ready!');
 });
 
 //--------------------------------------------------------------
-//what to run when recieve command
-client.on('message', message => handleMessage(client, message));
+//run on events
 
-client.login(token);
+client.on(Events.InteractionCreate, interaction => handleInteraction(interaction, interactionFilter));
+
+client.login(TOKEN);
