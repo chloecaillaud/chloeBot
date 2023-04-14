@@ -125,7 +125,7 @@ function removeCustomTextReply(guildId, textCommand)
  * @param {string} textReply
  * the associated response for the aforementioned textCommand
  */
-function modifyustomTextReply(guildId, textCommand, textReply)
+function modifyCustomTextReply(guildId, textCommand, textReply)
 {
 	const filePath = GUILD_SETTINGS_DIR + guildId + '.json';
 	if(!isValidFile(filePath))
@@ -228,7 +228,7 @@ module.exports =
 	,clearCustomTextReplies
 	,addCustomTextReply
 	,removeCustomTextReply
-	,modifyustomTextReply
+	,modifyCustomTextReply
 	,getCustomTextReply
 	,getCustomTextReplies
 
