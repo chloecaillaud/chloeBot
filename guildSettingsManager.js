@@ -79,7 +79,7 @@ function addCustomTextReply(guildId, textCommand, textReply)
 
 	if(!!settings.customTextReplies[textCommand])
 	{
-		throw new Error('guildManagerError', {cause: {fancyMessage: 'Error: specified command already exists.', ignore: false}});
+		throw new Error('guildSettingsManagerError', {cause: {fancyMessage: 'Error: specified command already exists.', ignore: false}});
 	}
 	else
 	{
@@ -100,14 +100,14 @@ function removeCustomTextReply(guildId, textCommand)
 	const filePath = GUILD_SETTINGS_DIR + guildId + '.json';
 	if(!isValidFile(filePath))
 	{
-		throw new Error('guildManagerError', {cause: {fancyMessage: 'Error: failed to find guild settings.', ignore: false}});
+		throw new Error('guildSettingsManagerError', {cause: {fancyMessage: 'Error: failed to find guild settings.', ignore: false}});
 	}
 
 	const settings = JSON.parse(fs.readFileSync(filePath));
 
 	if(!settings.customTextReplies[textCommand])
 	{
-		throw new Error('guildManagerError', {cause: {fancyMessage: 'Error: specified command already exists.', ignore: false}});
+		throw new Error('guildSettingsManagerError', {cause: {fancyMessage: 'Error: specified command already exists.', ignore: false}});
 	}
 	else
 	{
@@ -130,14 +130,14 @@ function modifyCustomTextReply(guildId, textCommand, textReply)
 	const filePath = GUILD_SETTINGS_DIR + guildId + '.json';
 	if(!isValidFile(filePath))
 	{
-		throw new Error('guildManagerError', {cause: {fancyMessage: 'Error: failed to find guild settings.', ignore: false}});
+		throw new Error('guildSettingsManagerError', {cause: {fancyMessage: 'Error: failed to find guild settings.', ignore: false}});
 	}
 
 	const settings = JSON.parse(fs.readFileSync(filePath));
 
 	if(!settings.customTextReplies[textCommand])
 	{
-		throw new Error('guildManagerError', {cause: {fancyMessage: 'Error: could not find specified command.', ignore: false}});
+		throw new Error('guildSettingsManagerError', {cause: {fancyMessage: 'Error: could not find specified command.', ignore: false}});
 	}
 	else
 	{
@@ -165,9 +165,9 @@ function getCustomTextReply(guildId, textCommand)
 
 	const settings = JSON.parse(fs.readFileSync(filePath));
 
-	if(!settings.customTextReplies[textCommand])
+	if(!settings.customTextReplies)
 	{
-		throw new Error('guildManagerError', {cause: {fancyMessage: 'Error: failed to find guild settings.', ignore: false}});
+		throw new Error('guildSettingsManagerError', {cause: {fancyMessage: 'Error: failed to find guild settings.', ignore: false}});
 	}
 	else
 	{
@@ -186,14 +186,14 @@ function getCustomTextReplies(guildId)
 	const filePath = GUILD_SETTINGS_DIR + guildId + '.json';
 	if(!isValidFile(filePath))
 	{
-		throw new Error('guildManagerError', {cause: {fancyMessage: 'Error: failed to find guild settings.', ignore: false}});
+		throw new Error('guildSettingsManagerError', {cause: {fancyMessage: 'Error: failed to find guild settings.', ignore: false}});
 	}
 
 	const settings = JSON.parse(fs.readFileSync(filePath));
 
 	if(Object.keys(settings.customTextReplies).length === 0)
 	{
-		Error('guildManagerError', {cause: {fancyMessage: 'Error: could not find specified command.', ignore: false}});
+		Error('guildSettingsManagerError', {cause: {fancyMessage: 'Error: could not find specified command.', ignore: false}});
 	}
 	else
 	{

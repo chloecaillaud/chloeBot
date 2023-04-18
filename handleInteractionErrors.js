@@ -2,9 +2,12 @@ const Discord = require('discord.js');
 
 function handleInteractionError(interaction, error)
 {
-	if(error instanceof Discord.DiscordAPIError) {handleAPIError(interaction, error);}
-	else if(error instanceof Discord.DiscordjsError) {handleDiscordJsError(interaction, error);}
-	else if(error instanceof Error) {handleJsError(interaction, error);}
+	if(error instanceof Discord.DiscordAPIError) 
+		{handleAPIError(interaction, error);}
+	else if(error instanceof Discord.DiscordjsError)
+		{handleDiscordJsError(interaction, error);}
+	else if(error instanceof Error)
+		{handleJsError(interaction, error);}
 }
 
 //-------------------------------------------------------------------------------------
@@ -36,7 +39,7 @@ async function handleAPIError(interaction, error)
 	
 	const errorMessage = isUnknownError ? `Unknown error: \n${error.message}` : `Error, failed to ${failedAction} data: \n${error.message}`;
 	const messageSucess = sendErrorMessage(interaction, errorMessage);
-	messageSucess ? console.log('notified user of following error:') : console.warn('Failed to notify user of the following error:');
+	messageSucess ? console.log('notified user of following API error:') : console.warn('Failed to notify user of the following error:');
 	console.error(error);
 }
 
@@ -45,7 +48,7 @@ function handleDiscordJsError(interaction, error)
 	//TODO: handle common errors with more grace
 	let errorMessage = `Error, Discordjs code: \n${error.code}`;
 	const messageSucess = sendErrorMessage(interaction, errorMessage);
-	messageSucess ? console.log('notified user of following error:') : console.warn('Failed to notify user of the following error:');
+	messageSucess ? console.log('notified user of following DiscordJs error:') : console.warn('Failed to notify user of the following error:');
 	console.error(error);
 }
 
@@ -56,7 +59,7 @@ function handleJsError(interaction, error)
 
 	let errorMessage = (error.cause && !!error.cause.fancyMessage) ? error.cause.fancyMessage : `Error: ${error.message}`;
 	const messageSucess = sendErrorMessage(interaction, errorMessage);
-	messageSucess ? console.log('notified user of following error:') : console.warn('Failed to notify user of the following error:');
+	messageSucess ? console.log('notified user of following Js error:') : console.warn('Failed to notify user of the following error:');
 	console.error(error);
 }
 
