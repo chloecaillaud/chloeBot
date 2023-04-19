@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
+const {handleInteractionError} = require('../handleInteractionErrors.js');
 
 //=====================================================================================
 
@@ -51,23 +52,24 @@ async function executeSlashCommand(interaction)
 		switch(interaction.options.getSubcommand())
 		{
 			case 'set':
-				executeSubcmdSet(interaction);
+				await executeSubcmdSet(interaction);
 				break;
 			case 'clear':
-				executeSubcmdClear(interaction);
+				await executeSubcmdClear(interaction);
 				break;
 			default:
-				await interaction.reply('shits fucked');
+				throw new Error('invalidComponent', {cause: {fancyMessage: 'Invalid subcommand: unknown subcommand.', ignore: false}});
 		}
 	}
 	catch(err)
 	{
-		//last catch
-		console.error(err)
+		handleInteractionError(interaction, err);
 	}
 }
 
-// subcommands
+//--------------------
+//set subcommand
+
 async function executeSubcmdSet(interaction)
 {
 	const targetMember = interaction.options.getMember('user');
@@ -77,25 +79,18 @@ async function executeSubcmdSet(interaction)
 	//and therefor not modifyable
 	if(!targetMember.manageable)
 	{
-		interaction.reply({ content: `unable to change ${targetMember.displayName}\'s name due to their elevated privilages.`, ephemeral: true });
+		await interaction.reply({ content: `unable to change ${targetMember.displayName}\'s name due to their elevated privilages.`, ephemeral: true });
 		return;
 	}
-	//TODO filter nickname through profanity filter
-
-	//TODO add channel filtering
-
-	targetMember.setNickname(newUsername, `requested by ${interaction.user.username}`);
-
-	//reply
-	if(interaction.user.equals(targetMember.user))
-	{
-		interaction.reply(`${interaction.user.username} set their nickname to ${newUsername}.`);
-	}
-	else
-	{
-		interaction.reply(`${interaction.user.username} set ${targetMember.user.username}\'s nickname to ${newUsername}.`);
-	}
+	
+	await targetMember.setNickname(newUsername, `Username set by ${interaction.user.username}`);
+	
+	replyMsg = interaction.user.id === targetMember.id ? `${interaction.user.username} set their nickname to ${newUsername}.` : `${interaction.user.username} set ${targetMember.user.username}\'s nickname to ${newUsername}.`;
+	await interaction.reply(replyMsg);
 }
+
+//--------------------
+//clear subcommand
 
 async function executeSubcmdClear(interaction)
 {
@@ -108,22 +103,13 @@ async function executeSubcmdClear(interaction)
 		await interaction.reply({ content: `unable to change ${targetMember.displayName}\'s name due to their elevated privilages.`, ephemeral: true });
 		return;
 	}
-	//TODO filter nickname through profanity filter
 
-	//TODO add channel filtering
+	await targetMember.setNickname(null, `Username set by ${interaction.user.username}`);
 
-	targetMember.setNickname(null, `requested by ${interaction.user.username}`);
-
-	//reply
-	if(interaction.user.equals(targetMember.user))
-	{
-		await interaction.reply(`${interaction.user.username} cleared their nickname.`);
-	}
-	else
-	{
-		await interaction.reply(`${interaction.user.username} cleared ${targetMember.user.username}\'s nickname.`);
-	}
+	replyMsg = interaction.user.id === targetMember.id ? `${interaction.user.username} cleared their nickname.` : `${interaction.user.username} cleared ${targetMember.user.username}\'s nickname.`
+	await interaction.reply(replyMsg);
 }
+
 //-------------------------------------------------------------------------------------
 //prep command data for uploading
 const rawCmdData = cmdData.toJSON();
