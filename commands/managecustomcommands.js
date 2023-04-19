@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, Colors, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ButtonBuilder, ButtonStyle } = require('discord.js');
-const guildSettingsManager = require('../guildSettingsManager.js');
 const {handleInteractionError} = require('../handleInteractionErrors.js');
+const guildSettingsManager = require('../guildSettingsManager.js');
 const assert = require('assert');
 
 //=====================================================================================
@@ -62,7 +62,6 @@ async function executeComponentCommand(interaction, interactionFilter)
 	{
 		//early out if user who interacted isn't the one who initiated the original interaction
 		originalUser = await interaction.message.interaction.user.fetch();
-		//TODO add ephimral resonse since reply is required
 		if(originalUser.id !== interaction.user.id)
 		{
 			interaction.deferUpdate();
@@ -98,7 +97,7 @@ async function executeComponentCommand(interaction, interactionFilter)
 				await updateMenuClear(interaction, interactionFilter);
 				break;
 			default:
-				await interaction.reply('shits fucked');
+				throw new Error('invalidComponent', {cause: {fancyMessage: 'invalid component: unknown component id.', ignore: false}});
 		}
 	}
 	catch(err)
@@ -130,7 +129,7 @@ async function updateMenuAdd(interaction, interactionFilter)
 	interaction = await fetchModalInput(interaction, replyInputMenu, originalUserId);
 	interactionFilter.delete(interaction.message.id);
 	
-	let newCommandTrigger = interaction.fields.getTextInputValue('newTrigger');
+	let newCommandTrigger = interaction.fields.getTextInputValue('newTrigger').trim();
 	let newCommandReply = interaction.fields.getTextInputValue('newReply');
 	assert(newCommandTrigger && newCommandReply, 'invalid submission');
 	//check against existing custom commands
@@ -333,6 +332,8 @@ async function fetchUserInput(interaction, replyOptions, allowedUserId, timeout 
 		return newInteraction.user.id === allowedUserId;
 	}
 
+	//disallow mentions when sending message
+	replyOptions.allowedMentions = {parse: []};
 	updateMessage(interaction, replyOptions);
 
 	return interaction.message.awaitMessageComponent({componentInteractionFilter, time: timeout})

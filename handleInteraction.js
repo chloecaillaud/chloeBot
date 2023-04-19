@@ -1,11 +1,13 @@
 const fs = require('fs');
 const assert = require('assert');
+
 //=====================================================================================
-// HANDLE ALL INCOMING MESSAGES
+// HANDLE ALL INCOMING INTERACTIONS
 //=====================================================================================
+
 function handleInteraction(interaction, interactionFilter)
 {
-	if(interaction.user.bot) return;
+	if(interaction.user.bot || interaction.user.system) {return;}
 
 	if(interaction.isChatInputCommand())
 	{
@@ -16,6 +18,8 @@ function handleInteraction(interaction, interactionFilter)
 		handleComponentInteraction(interaction, interactionFilter)
 	}
 }
+
+//-------------------------------------------------------------------------------------
 
 async function handleChatInputInteraction(interaction)
 {
@@ -77,4 +81,7 @@ async function handleComponentInteraction(interaction, interactionFilter)
 		.catch(console.error(err));
 	}
 }
+
+//-------------------------------------------------------------------------------------
+
 exports.handleInteraction = handleInteraction;

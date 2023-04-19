@@ -1,4 +1,5 @@
 const { handleInteraction } = require("./handleInteraction");
+const { handleMessage } = require("./handleMessage");
 const {TOKEN} = require('./config.json');
 const { Events, GatewayIntentBits } = require('discord.js');
 const Discord = require('discord.js');
@@ -29,5 +30,6 @@ client.once(Events.ClientReady, () =>
 //run on events
 
 client.on(Events.InteractionCreate, interaction => handleInteraction(interaction, interactionFilter));
+client.on(Events.MessageCreate, message => handleMessage(message));
 
 client.login(TOKEN);
