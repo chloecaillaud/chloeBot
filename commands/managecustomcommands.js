@@ -419,7 +419,6 @@ function getEmbededModificationLog(modificationType, username, commandTrigger = 
 				.setColor(Colors.Blue)
 				.setDescription('Modified custom command:')
 				.addFields({ name: commandTrigger, value: commandReply})
-				.setFooter({ text: username})
 				;
 			break;
 		case 'remove':
@@ -427,14 +426,12 @@ function getEmbededModificationLog(modificationType, username, commandTrigger = 
 				.setColor(Colors.Red)
 				.setDescription('Removed custom command:')
 				.addFields({ name: commandTrigger, value: commandReply})
-				.setFooter({ text: username})
 				;
 			break;
 		case 'clear':
 			embed
 				.setColor(Colors.Red)
 				.setDescription('Cleared all custom commands!')
-				.setFooter({ text: username})
 				;
 			break;
 		default:
