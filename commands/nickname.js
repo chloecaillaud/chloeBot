@@ -1,9 +1,14 @@
-const { SlashCommandBuilder } = require('discord.js');
-const {handleInteractionError} = require('../handleInteractionErrors.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { handleInteractionError } = require('../handleInteractionErrors.js');
+const { ensurePermissionsForCommand } = require('../permissionManager.js');
 
 //=====================================================================================
 
 const COMMANDNAME = 'nickname';
+const PERMISSIONS = 
+	PermissionFlagsBits.ReadMessageHistory
+	| PermissionFlagsBits.ManageNicknames
+	;
 
 //-------------------------------------------------------------------------------------
 // build command data
@@ -49,6 +54,8 @@ async function executeSlashCommand(interaction)
 {
 	try
 	{
+		await ensurePermissionsForCommand(interaction, PERMISSIONS);
+
 		switch(interaction.options.getSubcommand())
 		{
 			case 'set':

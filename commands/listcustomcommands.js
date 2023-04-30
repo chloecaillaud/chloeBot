@@ -1,12 +1,18 @@
-const { SlashCommandBuilder, EmbedBuilder, Colors, MessageFlags, ThreadAutoArchiveDuration } = require('discord.js');
-const {handleInteractionError} = require('../handleInteractionErrors.js');
+const { SlashCommandBuilder, EmbedBuilder, Colors, MessageFlags, ThreadAutoArchiveDuration, PermissionFlagsBits } = require('discord.js');
+const { handleInteractionError } = require('../handleInteractionErrors.js');
+const { ensurePermissionsForCommand } = require('../permissionManager.js');
 const guildSettingsManager = require('../guildSettingsManager.js');
 const assert = require('assert');
 
 //=====================================================================================
 
 const COMMANDNAME = 'listcustomcommands';
-
+const PERMISSIONS = 
+	PermissionFlagsBits.ReadMessageHistory
+	| PermissionFlagsBits.CreatePublicThreads
+	| PermissionFlagsBits.SendMessagesInThreads
+	| PermissionFlagsBits.ManageThreads
+	;
 //-------------------------------------------------------------------------------------
 // build command data
 
@@ -29,6 +35,8 @@ async function executeSlashCommand(interaction)
 {
 	try
 	{
+		await ensurePermissionsForCommand(interaction, PERMISSIONS);
+
 		//create a message and attach a thread to send command list in (this is bypass the 2000 char limit, by sending 1 message per command)
 		let threadChannelPromise = interaction.reply({content: 'see thread for list:', fetchReply: true})
 			.then((message) => message.startThread({name: 'custom command list', autoArchiveDuration: ThreadAutoArchiveDuration.OneHour}));

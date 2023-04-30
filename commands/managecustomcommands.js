@@ -1,11 +1,15 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, Colors, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ButtonBuilder, ButtonStyle } = require('discord.js');
-const {handleInteractionError} = require('../handleInteractionErrors.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, Colors, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ButtonBuilder, ButtonStyle} = require('discord.js');
+const { handleInteractionError } = require('../handleInteractionErrors.js');
+const { ensurePermissionsForCommand } = require('../permissionManager.js');
 const guildSettingsManager = require('../guildSettingsManager.js');
 const assert = require('assert');
 
 //=====================================================================================
 
 const COMMANDNAME = 'managecustomcommands';
+const PERMISSIONS = 
+	PermissionFlagsBits.ReadMessageHistory
+	;
 
 //-------------------------------------------------------------------------------------
 // build command data
@@ -22,35 +26,42 @@ const cmdData = new SlashCommandBuilder()
 
 async function executeSlashCommand(interaction)
 {
-	const cancelMenu = getCancelMenu(true);
+	try
+	{
+		await ensurePermissionsForCommand(interaction, PERMISSIONS);
 
-	const baseMenu = new ActionRowBuilder()
-		.addComponents(
-			new ButtonBuilder()
-				.setCustomId(`persistant_${COMMANDNAME}__add`)
-				.setLabel('add')
-				.setStyle(ButtonStyle.Success)
-			,new ButtonBuilder()
-				.setCustomId(`persistant_${COMMANDNAME}__modify`)
-				.setLabel('modify')
-				.setStyle(ButtonStyle.Secondary)
-			,new ButtonBuilder()
-				.setCustomId(`persistant_${COMMANDNAME}__remove`)
-				.setLabel('remove')
-				.setStyle(ButtonStyle.Danger)
-			,new ButtonBuilder()
-				.setCustomId(`void`)
-				.setLabel('\u200B')
-				.setStyle(ButtonStyle.Secondary)
-				.setDisabled(true)
-			,new ButtonBuilder()
-				.setCustomId(`persistant_${COMMANDNAME}__clear`)
-				.setLabel('clear all')
-				.setStyle(ButtonStyle.Danger)
-			);
+		const cancelMenu = getCancelMenu(true);
+		const baseMenu = new ActionRowBuilder()
+			.addComponents(
+				new ButtonBuilder()
+					.setCustomId(`persistant_${COMMANDNAME}__add`)
+					.setLabel('add')
+					.setStyle(ButtonStyle.Success)
+				,new ButtonBuilder()
+					.setCustomId(`persistant_${COMMANDNAME}__modify`)
+					.setLabel('modify')
+					.setStyle(ButtonStyle.Secondary)
+				,new ButtonBuilder()
+					.setCustomId(`persistant_${COMMANDNAME}__remove`)
+					.setLabel('remove')
+					.setStyle(ButtonStyle.Danger)
+				,new ButtonBuilder()
+					.setCustomId(`void`)
+					.setLabel('\u200B')
+					.setStyle(ButtonStyle.Secondary)
+					.setDisabled(true)
+				,new ButtonBuilder()
+					.setCustomId(`persistant_${COMMANDNAME}__clear`)
+					.setLabel('clear all')
+					.setStyle(ButtonStyle.Danger)
+				);
 
-	response = await interaction.reply({content: 'Select how you wish to manage custom commands for this server:', components: [baseMenu, cancelMenu], ephemeral: false});
-	
+		response = await interaction.reply({content: 'Select how you wish to manage custom commands for this server:', components: [baseMenu, cancelMenu], ephemeral: false});
+	}
+	catch(err)
+	{
+		handleInteractionError(interaction, err);
+	}
 }
 
 //-------------------------------------------------------------------------------------

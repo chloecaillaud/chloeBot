@@ -1,9 +1,11 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
-const {handleInteractionError} = require('../handleInteractionErrors.js');
+const { handleInteractionError } = require('../handleInteractionErrors.js');
+const { ensurePermissionsForCommand } = require('../permissionManager.js');
 
 //=====================================================================================
 
 const COMMANDNAME = 'uptime';
+const PERMISSIONS = BigInt(0);
 
 //-------------------------------------------------------------------------------------
 // build command data
